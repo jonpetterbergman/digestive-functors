@@ -13,7 +13,7 @@ module Text.Digestive.Form.Encoding
 import           Control.Monad.Identity             (Identity)
 import           Data.Maybe                         (mapMaybe)
 import           Data.Monoid                        (Monoid (..), mconcat)
-
+import           Data.Semigroup                     (Semigroup (..))
 
 --------------------------------------------------------------------------------
 import           Text.Digestive.Form.Internal
@@ -35,14 +35,17 @@ instance Show FormEncType where
     show UrlEncoded = "application/x-www-form-urlencoded"
     show MultiPart  = "multipart/form-data"
 
+--------------------------------------------------------------------------------
+instance Semigroup FormEncType where
+   (<>) UrlEncoded x = x
+   (<>) MultiPart  _ = MultiPart
 
 --------------------------------------------------------------------------------
 -- Monoid instance for encoding types: prefer UrlEncoded, but fallback to
 -- MultiPart when needed
 instance Monoid FormEncType where
-    mempty               = UrlEncoded
-    mappend UrlEncoded x = x
-    mappend MultiPart  _ = MultiPart
+    mempty  = UrlEncoded
+    mappend = (<>)
 
 
 --------------------------------------------------------------------------------
